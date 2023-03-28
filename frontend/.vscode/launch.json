@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Electron Application",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+      "args": ["${workspaceFolder}/src-electron/electron-main.ts"]
+    },
+    {
+      "name": "Attach Node Debugger",
+      "type": "node",
+      "request": "attach",
+      "port": 5858
+    }
+  ]
+}

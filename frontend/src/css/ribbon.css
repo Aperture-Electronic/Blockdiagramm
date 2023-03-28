@@ -1,0 +1,87 @@
+.ribbon-card {
+  border-radius: 4px 4px 0 0;
+}
+.ribbon-title {
+  text-transform: none;
+}
+
+.ribbon-panel {
+  min-height: 100%;
+  /* height: 100px; */
+  min-width: 50px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ribbon-panel-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.ribbon-panel-empty {
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  bottom: 32px;
+}
+
+.ribbon-panel-title {
+  height: 32px;
+}
+
+.ribbon-button::before {
+  box-shadow: none;
+}
+
+.ribbon-button {
+  border: 1px solid transparent;
+  padding: 0.25rem 0.5rem;
+}
+
+.ribbon-button:hover {
+  border: 1px solid currentColor;
+}
+
+.ribbon-button-text {
+  line-height: 1rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.01786em;
+  text-transform: none;
+  align-content: center;
+}
+
+.ribbon-item {
+  border: 1px solid transparent;
+  padding: 0.25rem 0.5rem;
+}
+
+.ribbon-menu {
+  outline: 2px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.25);
+  min-width: 150px;
+}
+
+.ribbon-toggle {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 1px;
+  box-shadow: none;
+}
+
+.ribbon-tooltip {
+  background-color: white;
+  color: black;
+  box-shadow: 0 5px 5px 0 rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  padding: 0;
+  outline: 2px solid rgba(0, 0, 0, 0.25);
+  max-width: 250px;
+}
+
+.ribbon-tooltip.ribbon-tooltip-fixed {
+  top: 240px !important;
+}
