@@ -1,10 +1,10 @@
-﻿using BlockdiagrammBackend.Models.Server;
+﻿using BlockdiagrammBackend.Models.Project;
+using BlockdiagrammBackend.Models.Server;
 
 namespace BlockdiagrammBackend.Models.Globals
 {
     public static class Globals
     {
-        public static CancellationTokenSource? AppCancellationTokenSource { get; set; }
-        public static ServerMonitor? ServerMonitor { get; set; }
+        public static CancellationTokenSource AppCancellationTokenSource { get; } = new();
     }
 }

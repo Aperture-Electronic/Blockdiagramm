@@ -20,6 +20,7 @@
               :icon="item.icon"
               :menu="item.menu"
               :tooltip="item.tooltip"
+              :action="item.action"
             />
             <template v-else-if="item.type == 'selective'">
               <RibbonSelective

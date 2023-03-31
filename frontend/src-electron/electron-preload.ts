@@ -27,3 +27,9 @@
  *   }
  * }
  */
+
+import { contextBridge, ipcRenderer } from 'electron';
+
+contextBridge.exposeInMainWorld('electron', {
+  getContextUUID: () => ipcRenderer.invoke('getContextUUID'),
+});

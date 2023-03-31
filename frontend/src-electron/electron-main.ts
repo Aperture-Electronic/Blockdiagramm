@@ -1,7 +1,11 @@
-import { app, BrowserWindow, nativeTheme } from 'electron';
+import { app, nativeTheme, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
-import { startBackendServer } from './electron-backend';
+import {
+  generateUUIDForSession,
+  startBackendServer,
+  stopBackendServer,
+} from './electron-backend';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -15,6 +19,13 @@ try {
 } catch (_) {}
 
 let mainWindow: BrowserWindow | undefined;
+
+const id = generateUUIDForSession();
+console.log('UUID of current session: ' + id);
+
+function getContextUUID() {
+  return id;
+}
 
 function createWindow() {
   /**
@@ -45,13 +56,15 @@ function createWindow() {
   }
 
   mainWindow.on('closed', () => {
+    stopBackendServer();
     mainWindow = undefined;
   });
 }
 
 app.on('ready', () => {
-  createWindow();
+  ipcMain.handle('getContextUUID', getContextUUID);
 
+  createWindow();
   startBackendServer();
 });
 

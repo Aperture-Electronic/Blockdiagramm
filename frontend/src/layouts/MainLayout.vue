@@ -31,9 +31,9 @@
       </q-page>
     </q-page-container>
     <q-footer elevated class="bg-grey-8 text-white">
-      <q-toolbar>
-        <q-toolbar-title>Footer</q-toolbar-title>
-      </q-toolbar>
+      <q-bar dense>
+        <TinyServerMonitor />
+      </q-bar>
     </q-footer>
   </q-layout>
 </template>
@@ -47,16 +47,18 @@ import leftMenu from '../layouts/LeftMenuLayout';
 
 import RibbonPanel from 'src/components/RibbonPanel.vue';
 import LeftMenuPanel from 'src/components/LeftMenuPanel.vue';
+import TinyServerMonitor from 'src/components/StatusBar/TinyServerMonitor.vue';
+import { InitalizeEventBus } from 'src/event/EventBus';
 
 export default defineComponent({
   name: 'MainLayout',
-  components: { RibbonPanel, LeftMenuPanel },
+  components: { RibbonPanel, LeftMenuPanel, TinyServerMonitor },
   setup() {
+    InitalizeEventBus();
     let defRibbonPanel = ribbon.panels.find((p) => p.default);
     if (defRibbonPanel == undefined) {
       defRibbonPanel = ribbon.panels[0];
     }
-
     return {
       tab: ref(defRibbonPanel.name),
       ribbon: ribbon,

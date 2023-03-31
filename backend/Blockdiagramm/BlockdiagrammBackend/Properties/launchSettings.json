@@ -3,7 +3,7 @@
     "http": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "weatherforecast",
+      "launchUrl": "http://localhost:5296/ServerMonitor/CheckServerStatus",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

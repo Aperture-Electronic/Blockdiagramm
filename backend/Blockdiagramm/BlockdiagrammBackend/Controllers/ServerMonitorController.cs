@@ -1,28 +1,19 @@
-﻿using BlockdiagrammBackend.Models.Globals;
-using BlockdiagrammBackend.Models.Server;
+﻿using BlockdiagrammBackend.Models.Server;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlockdiagrammBackend.Controllers
 {
-    [ApiController]
     [Route("[controller]/[action]")]
     public class ServerMonitorController : Controller
     {
-        public ServerMonitorController()
-        {
+        private readonly ServerMonitor serverMonitor;
 
-        }
+        public ServerMonitorController(ServerMonitor serverMonitor) => this.serverMonitor = serverMonitor;
 
         [HttpGet]
-        public ServerStatus? CheckServerStatus()
-        {
-            return Globals.ServerMonitor?.ServerStatus;
-        }
+        public ServerStatus CheckServerStatus() => serverMonitor.ServerStatus;
 
         [HttpPost]
-        public void StopServer()
-        {
-            Program.Shutdown();
-        }
+        public void StopServer() => Program.Shutdown();
     }
 }

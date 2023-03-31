@@ -34,7 +34,7 @@ const ProjectCard = [
           title: 'New Project',
           description: 'Create a new project.',
         },
-        action: undefined,
+        action: 'new-project',
       },
       {
         type: 'small-button',

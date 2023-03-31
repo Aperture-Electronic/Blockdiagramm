@@ -6,12 +6,10 @@ namespace BlockdiagrammBackend
     {
         public static void Main(string[] args)
         {
-            // Create global application cancellation source
-            Globals.AppCancellationTokenSource = new CancellationTokenSource();
-
             // Build and start the host
             IHost host = CreateHostBuilder(args).Build();
-
+            
+            // Run the host with a global application cancellation token
             host.RunAsync(Globals.AppCancellationTokenSource.Token).Wait();
         }
 
@@ -24,6 +22,7 @@ namespace BlockdiagrammBackend
 
         public static void Shutdown()
         {
+            // When we need shutdown the server, use the cancellation token
             Globals.AppCancellationTokenSource?.Cancel();
         }
     }

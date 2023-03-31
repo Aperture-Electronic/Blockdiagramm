@@ -1,6 +1,6 @@
 <template>
   <q-btn-group v-if="hasMenu" flat class="ribbon-button" style="padding: 0 0">
-    <q-btn style="padding: 0 0.5rem" align="left">
+    <q-btn style="padding: 0 0.5rem" align="left" @click="onClick">
       <div :class="{ flex: true, 'q-pr-sm': hasTitle }">
         <q-icon size="1.35em" :name="icon" />
       </div>
@@ -17,7 +17,13 @@
       <RibbonMenu :menu="menu" />
     </q-btn>
   </q-btn-group>
-  <q-btn v-else class="ribbon-button" style="padding: 0 0.5rem" align="left">
+  <q-btn
+    v-else
+    class="ribbon-button"
+    style="padding: 0 0.5rem"
+    align="left"
+    @click="onClick"
+  >
     <div :class="{ flex: true, 'q-pr-sm': hasTitle }">
       <q-icon size="1.35em" :name="icon" />
     </div>
@@ -30,16 +36,22 @@
 import { defineComponent } from 'vue';
 import RibbonToolTipBox from './RibbonToolTipBox.vue';
 import RibbonMenu from './RibbonMenu.vue';
+import eventBus from 'src/event/EventBus';
 
 export default defineComponent({
   name: 'RibbonSmallButton',
   components: { RibbonToolTipBox, RibbonMenu },
-  props: ['title', 'icon', 'tooltip', 'menu'],
+  props: ['title', 'icon', 'tooltip', 'menu', 'action'],
   setup(props) {
     return {
       hasTitle: props.title != '',
       hasMenu: typeof props.menu != 'undefined' && props.menu.length > 0,
     };
+  },
+  methods: {
+    onClick() {
+      eventBus.emit(this.action, null);
+    },
   },
 });
 </script>

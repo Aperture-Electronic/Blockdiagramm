@@ -115,8 +115,8 @@ module.exports = configure(function (/* ctx */) {
     //   registerServiceWorker: 'src-pwa/register-service-worker',
     //   serviceWorker: 'src-pwa/custom-service-worker',
     //   pwaManifestFile: 'src-pwa/manifest.json',
-    //   electronMain: 'src-electron/electron-main',
-    //   electronPreload: 'src-electron/electron-preload'
+    // electronMain: 'src-electron/electron-main.ts',
+    // electronPreload: 'src-electron/electron-preload.ts',
     // },
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
