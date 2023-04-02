@@ -8,6 +8,7 @@
             :icon="column.icon"
             :menu="column.menu"
             :tooltip="column.tooltip"
+            :action="column.action"
           />
         </div>
       </template>

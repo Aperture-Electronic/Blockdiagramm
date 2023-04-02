@@ -1,4 +1,4 @@
-import { app, nativeTheme, BrowserWindow, ipcMain } from 'electron';
+import { app, nativeTheme, BrowserWindow } from 'electron';
 import path from 'path';
 import os from 'os';
 import {
@@ -6,6 +6,7 @@ import {
   startBackendServer,
   stopBackendServer,
 } from './electron-backend';
+import { initializeElectronApi } from './api/electron-api-init';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -18,14 +19,11 @@ try {
   }
 } catch (_) {}
 
-let mainWindow: BrowserWindow | undefined;
+// let mainWindow: BrowserWindow | undefined;
+export let mainWindow: BrowserWindow | undefined = undefined;
 
-const id = generateUUIDForSession();
-console.log('UUID of current session: ' + id);
-
-function getContextUUID() {
-  return id;
-}
+export const sessionId = generateUUIDForSession();
+console.log('UUID of current session: ' + sessionId);
 
 function createWindow() {
   /**
@@ -41,15 +39,20 @@ function createWindow() {
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
       preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
     },
+    frame: process.env.DEBUGGING ? true : false,
   });
 
   mainWindow.loadURL(process.env.APP_URL);
 
+  mainWindow.resizable = true;
+
   if (process.env.DEBUGGING) {
     // if on DEV or Production with debug enabled
     mainWindow.webContents.openDevTools();
+    mainWindow.menuBarVisible = true;
   } else {
     // we're on production; no access to devtools pls
+    mainWindow.menuBarVisible = false;
     mainWindow.webContents.on('devtools-opened', () => {
       mainWindow?.webContents.closeDevTools();
     });
@@ -62,7 +65,7 @@ function createWindow() {
 }
 
 app.on('ready', () => {
-  ipcMain.handle('getContextUUID', getContextUUID);
+  initializeElectronApi();
 
   createWindow();
   startBackendServer();

@@ -1,13 +1,34 @@
 <template>
   <q-layout view="hHh lpr fFf">
     <q-header bordered class="bg-primary text-white">
-      <q-toolbar>
-        <q-toolbar-title>Blockdiagramm</q-toolbar-title>
+      <q-toolbar style="-webkit-app-region: drag">
+        <q-toolbar-title shrink>
+          Block::<strong>diagramm</strong>
+        </q-toolbar-title>
+        <ProjectNameLabel :lblClass="['q-pt-sm', 'text-blue-grey-1']" />
         <q-space />
 
-        <q-btn dense flat icon="minimize" />
-        <q-btn dense flat icon="crop_square" />
-        <q-btn dense flat icon="close" />
+        <q-btn
+          dense
+          flat
+          icon="minimize"
+          style="-webkit-app-region: no-drag"
+          @click="minimizeWindow"
+        />
+        <q-btn
+          dense
+          flat
+          icon="crop_square"
+          style="-webkit-app-region: no-drag"
+          @click="maximizeWindow"
+        />
+        <q-btn
+          dense
+          flat
+          icon="close"
+          style="-webkit-app-region: no-drag"
+          @click="closeWindow"
+        />
       </q-toolbar>
       <RibbonPanel :ribbon="ribbon" />
     </q-header>
@@ -20,9 +41,12 @@
             unit="px"
             style="min-height: inherit"
             :limits="[150, 350]"
+            :before-class="['diagram-content']"
             :after-class="['diagram-content']"
           >
-            <template v-slot:before> </template>
+            <template v-slot:before>
+              <LeftMenuSources />
+            </template>
             <template v-slot:after>
               <router-view />
             </template>
@@ -35,6 +59,7 @@
         <TinyServerMonitor />
       </q-bar>
     </q-footer>
+    <DialogesContainer />
   </q-layout>
 </template>
 
@@ -45,16 +70,26 @@ import { defineComponent } from 'vue';
 import ribbon from '../layouts/RibbonLayout';
 import leftMenu from '../layouts/LeftMenuLayout';
 
+import ElectronApi from 'src-electron/api/electron-api';
+
 import RibbonPanel from 'src/components/RibbonPanel.vue';
 import LeftMenuPanel from 'src/components/LeftMenuPanel.vue';
 import TinyServerMonitor from 'src/components/StatusBar/TinyServerMonitor.vue';
-import { InitalizeEventBus } from 'src/event/EventBus';
+import DialogesContainer from 'src/components/DialogesContainer.vue';
+import ProjectNameLabel from 'src/components/ProjectNameLabel.vue';
+import LeftMenuSources from 'src/components/LeftMenu/LeftMenuSources.vue';
 
 export default defineComponent({
   name: 'MainLayout',
-  components: { RibbonPanel, LeftMenuPanel, TinyServerMonitor },
+  components: {
+    RibbonPanel,
+    LeftMenuPanel,
+    TinyServerMonitor,
+    DialogesContainer,
+    ProjectNameLabel,
+    LeftMenuSources,
+  },
   setup() {
-    InitalizeEventBus();
     let defRibbonPanel = ribbon.panels.find((p) => p.default);
     if (defRibbonPanel == undefined) {
       defRibbonPanel = ribbon.panels[0];
@@ -68,6 +103,23 @@ export default defineComponent({
       resourceBoxWidth: ref(250),
     };
   },
+  methods: {
+    closeWindow() {
+      (
+        window as unknown as { electron: typeof ElectronApi }
+      ).electron.closeWindow();
+    },
+    minimizeWindow() {
+      (
+        window as unknown as { electron: typeof ElectronApi }
+      ).electron.minimizeWindow();
+    },
+    maximizeWindow() {
+      (
+        window as unknown as { electron: typeof ElectronApi }
+      ).electron.maximizeWindow();
+    },
+  },
 });
 </script>
 
@@ -76,5 +128,7 @@ export default defineComponent({
 
 .diagram-content {
   min-height: inherit;
+  display: flex;
+  flex-direction: column;
 }
 </style>

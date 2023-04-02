@@ -8,7 +8,7 @@ const SourceCard = [
       title: 'Add File',
       description: 'Add a HDL source file to the project.',
     },
-    action: undefined,
+    action: 'add-source-file',
   },
   {
     type: 'big-button',

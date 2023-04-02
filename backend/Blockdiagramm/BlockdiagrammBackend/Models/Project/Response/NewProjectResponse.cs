@@ -1,19 +1,21 @@
-﻿namespace BlockdiagrammBackend.Models.Project.Response
+﻿using BlockdiagrammBackend.Session;
+
+namespace BlockdiagrammBackend.Models.Project.Response
 {
     [Serializable]
-    public class NewProjectResponse
+    public class NewProjectResponse : IErrorableResponse
     {
         public bool Success { get; set; }
 
         public string ErrorReason { get; set; }
 
-        public string ProjectName { get; set; }
+        public ProjectInstance? Project { get; set; }
 
-        public NewProjectResponse(bool success, string projectName = "", string errorReason = "")
+        public NewProjectResponse(bool success, ProjectInstance? project = null, string errorReason = "")
         {
             Success = success;
             ErrorReason = errorReason;
-            ProjectName = projectName;
+            Project = project;
         }
     }
 }

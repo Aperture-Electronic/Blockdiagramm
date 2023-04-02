@@ -28,8 +28,7 @@
  * }
  */
 
-import { contextBridge, ipcRenderer } from 'electron';
+import { contextBridge } from 'electron';
+import electronApi from './api/electron-api';
 
-contextBridge.exposeInMainWorld('electron', {
-  getContextUUID: () => ipcRenderer.invoke('getContextUUID'),
-});
+contextBridge.exposeInMainWorld('electron', electronApi);

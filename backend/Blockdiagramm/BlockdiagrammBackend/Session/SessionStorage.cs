@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace BlockdiagrammBackend.Session
 {
@@ -8,7 +9,7 @@ namespace BlockdiagrammBackend.Session
         public int ExpiredScanTime { get; }
 
         private readonly ConcurrentDictionary<string, T> sessionDictionary;
-        private readonly ConcurrentDictionary<string, DateTime> sessionRegisterDictionary;
+        private readonly ConcurrentDictionary<string, Stopwatch> sessionRegisterDictionary;
         private readonly Thread sessionExpiredMonitorThread;
         private readonly object sessionLock = new();
 
@@ -18,7 +19,7 @@ namespace BlockdiagrammBackend.Session
             ExpiredScanTime = expiredScanTime;
 
             sessionDictionary = new ConcurrentDictionary<string, T>();
-            sessionRegisterDictionary = new ConcurrentDictionary<string, DateTime>();
+            sessionRegisterDictionary = new ConcurrentDictionary<string, Stopwatch>();
             sessionExpiredMonitorThread = new Thread(new ParameterizedThreadStart(SessionExpiredMonitorThread));
             sessionExpiredMonitorThread.Start(cancellationTokenSource.Token);  
         }
@@ -29,6 +30,8 @@ namespace BlockdiagrammBackend.Session
 
         public T GetOrAdd(string sessionId)
         {
+            sessionId = sessionId.ToLower();
+
             lock (sessionLock)
             {
                 if (sessionDictionary.TryGetValue(sessionId, out T? value))
@@ -39,7 +42,7 @@ namespace BlockdiagrammBackend.Session
                     // Reset the timeout
                     lock (sessionLock)
                     {
-                        sessionRegisterDictionary[sessionId] = DateTime.Now;
+                        sessionRegisterDictionary[sessionId].Restart();
 
                         return value;
                     }
@@ -51,7 +54,9 @@ namespace BlockdiagrammBackend.Session
                 }
 
                 sessionDictionary.TryAdd(sessionId, newSessionInstance);
-                sessionRegisterDictionary.TryAdd(sessionId, DateTime.Now);
+                Stopwatch timeoutWatch = new Stopwatch();
+                timeoutWatch.Start();
+                sessionRegisterDictionary.TryAdd(sessionId, timeoutWatch);
 #if DEBUG
                 Console.WriteLine($"New session stroage of {sessionId} has been added of {nameof(SessionStorage<T>)}<{typeof(T).Name}>");
 #endif
@@ -85,15 +90,13 @@ namespace BlockdiagrammBackend.Session
                 }
 
                 toRemove.Clear();
-                DateTime now = DateTime.Now;
 
                 lock (sessionLock)
                 {
                     foreach (var session in sessionRegisterDictionary)
                     {
-                        DateTime startTime = session.Value;
-                        TimeSpan timeSpan = now - startTime;
-                        if (timeSpan > Timeout)
+                        Stopwatch timeoutWatch = session.Value;
+                        if (timeoutWatch.Elapsed > Timeout)
                         {
                             toRemove.Add(session.Key);
                         }

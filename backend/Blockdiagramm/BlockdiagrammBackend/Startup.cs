@@ -17,7 +17,9 @@ namespace BlockdiagrammBackend
         {
             services.AddControllers();
 
-            services.AddCors(options => options.AddDefaultPolicy(builder => builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")));
+            services.AddCors(options => options.AddDefaultPolicy(builder => 
+            builder.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                   .WithHeaders(new string[] { "Content-Type" })));
 
             AddCustomServices(services);
         }

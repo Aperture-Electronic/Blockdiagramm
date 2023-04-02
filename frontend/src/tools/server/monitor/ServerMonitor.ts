@@ -63,7 +63,7 @@ export class ServerStatus {
   }
 }
 
-import { fetchJSONWithTimeout } from 'src/tools/FetchTimeout';
+import { fetchJSONWithTimeout } from 'src/tools/Fetch';
 import { BackendServerAddress } from '../BackendServer';
 
 const checkServerStatusPath = '/ServerMonitor/CheckServerStatus';

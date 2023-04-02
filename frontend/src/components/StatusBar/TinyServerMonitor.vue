@@ -20,7 +20,7 @@
     Server(5000)::{{ serverStatus.GetServerStatusString() }}
   </div>
   <div class="text-grey-4">Tick: {{ serverStatus.ServerTick }}</div>
-  <div class="text-grey-4">{{ uuid }}</div>
+  <div class="text-grey-5 text-uppercase">{{ sessionId }}</div>
 </template>
 
 <script lang="ts">
@@ -31,24 +31,23 @@ import {
 } from '../../tools/server/monitor/ServerMonitor';
 
 interface Data {
-  uuid: string;
   serverStatusTimeout: ReturnType<typeof setInterval> | null;
   serverStatus: ServerStatus;
+  sessionId: string;
 }
 
 export default defineComponent({
   name: 'TinyServerMonitor',
   data(): Data {
     let data: Data = {
-      uuid: '',
       serverStatusTimeout: null,
       serverStatus: new ServerStatus(),
+      sessionId: (this as unknown as { $CONTEXT_ID: string }).$CONTEXT_ID,
     };
 
     return data;
   },
   created() {
-    this.getContextUUID();
     this.serverStatusTimeout = setInterval(this.getServerStatus, 1000);
   },
   beforeUnmount() {
@@ -59,10 +58,6 @@ export default defineComponent({
   methods: {
     getServerStatus() {
       return GetServerStatusAsync(this.serverStatus);
-    },
-    async getContextUUID() {
-      let uuid = await (window as any).electron.getContextUUID();
-      this.uuid = uuid;
     },
   },
 });

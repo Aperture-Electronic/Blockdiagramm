@@ -1,8 +1,12 @@
-﻿using BlockdiagrammBackend.Session;
+﻿using BlockdiagrammBackend.Models.Elaborator;
+using BlockdiagrammBackend.Models.Sources;
+using BlockdiagrammBackend.Session;
+using System.Collections.Concurrent;
 
 namespace BlockdiagrammBackend.Models.Project
 {
-    public class ProjectInstance
+    [Serializable]
+    public partial class ProjectInstance
     {
         private readonly object projectGlobalLock = new object();
 
@@ -21,10 +25,16 @@ namespace BlockdiagrammBackend.Models.Project
 
         public string Name { get; private set; }
 
+        public string SessionId { get; }
+
+        public ConcurrentBag<SourceFile> SourceFiles { get; }
+
         public ProjectInstance(string sessionId)
         {
+            SessionId = sessionId;
             Path = string.Empty;
             Name = string.Empty;
+            SourceFiles = new ConcurrentBag<SourceFile>();
         }
 
         public void NewProject(string projectName, string projectPath)
@@ -38,6 +48,9 @@ namespace BlockdiagrammBackend.Models.Project
 
                 Name = projectName;
                 Path = projectPath;
+
+                SourceFiles.Clear();
+                elaborator.ResetElaborator();
             }
         }
 
@@ -52,5 +65,6 @@ namespace BlockdiagrammBackend.Models.Project
                 }
             }
         }
+
     }
 }

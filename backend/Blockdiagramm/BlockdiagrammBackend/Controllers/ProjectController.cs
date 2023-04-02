@@ -3,6 +3,7 @@ using BlockdiagrammBackend.Models.Project.Request;
 using BlockdiagrammBackend.Models.Project.Response;
 using BlockdiagrammBackend.Session;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Net;
 
 namespace BlockdiagrammBackend.Controllers
@@ -10,51 +11,41 @@ namespace BlockdiagrammBackend.Controllers
     [Route("[controller]/[action]")]
     public class ProjectController : Controller
     {
-        // public ProjectInstance projectInstance;
         private readonly SessionStorage<ProjectInstance> projectInstance;
 
         public ProjectController(SessionStorage<ProjectInstance> projectInstance) => this.projectInstance = projectInstance;
 
+        
+
         [HttpGet]
-        public bool CheckProjectValid(SessionIndependRequest request)
-        {
-            if (!ModelState.IsValid)
-            {
-                if (ModelState.ContainsKey(nameof(request.SessionId)))
-                {
-                    Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                }
+        public bool CheckProjectValid(SessionIndependRequest request) 
+            => ControllerHelper.CheckSessionIndependRequest(ModelState, Response) && projectInstance[request].IsValid;
 
-                return false;
-            }
-
-            return projectInstance[request].IsValid;
-        }
+        [HttpGet]
+        public string GetProjectName(SessionIndependRequest request)
+            => ControllerHelper.CheckSessionIndependRequest(ModelState, Response) ? projectInstance[request].Name : "";
 
         [HttpPost]
         public NewProjectResponse NewProject([FromBody] NewProjectRequest request)
         {
-            if (!ModelState.IsValid)
+            if (!ControllerHelper.CheckSessionIndependRequest(ModelState, Response))
             {
-                if (ModelState.ContainsKey(nameof(request.SessionId)))
-                {
-                    Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                }
-
                 return new NewProjectResponse(false, errorReason:
                     "Invalid request data (invalid session id, empty project name or path)");
             }
 
+            ProjectInstance project = projectInstance[request];
+
             try
             {
-                projectInstance[request].NewProject(request.Name, request.Path);
+                project.NewProject(request.Name, request.Path);
             }
             catch (Exception ex)
             {
                 return new NewProjectResponse(false, errorReason: ex.Message);
             }
 
-            return new NewProjectResponse(true, projectName: request.Name);
+            return new NewProjectResponse(true, project);
         }
 
         [HttpPost]
