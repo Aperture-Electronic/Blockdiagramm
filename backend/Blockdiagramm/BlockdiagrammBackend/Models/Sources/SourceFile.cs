@@ -76,7 +76,7 @@ namespace BlockdiagrammBackend.Models.Sources
         /// Read and update the file content
         /// </summary>
         /// <exception cref="FileNotFoundException">The target file is not on the disk</exception>
-        public async void ReadFileContent()
+        public async Task ReadFileContent()
         {
             if (!Exist)
             {

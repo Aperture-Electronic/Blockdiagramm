@@ -50,7 +50,7 @@ namespace BlockdiagrammBackend.Models.Project
                 Path = projectPath;
 
                 SourceFiles.Clear();
-                elaborator.ResetElaborator();
+                Components.Clear();
             }
         }
 
