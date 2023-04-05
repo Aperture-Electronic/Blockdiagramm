@@ -74,7 +74,7 @@ import { QInput } from 'quasar';
 import eventBus from 'src/event/EventBus';
 import { ref, defineComponent } from 'vue';
 import ElectronApi from 'src-electron/api/electron-api';
-import { fetchJSONPostObject } from 'src/tools/Fetch';
+import { fetchJsonPostObject } from 'src/tools/Fetch';
 import { BackendServerAddress } from 'src/tools/server/BackendServer';
 
 const newProjectPath = '/Project/NewProject';
@@ -139,7 +139,7 @@ export default defineComponent({
         sessionId: this.sessionId,
       };
 
-      let response = await fetchJSONPostObject(
+      let response = await fetchJsonPostObject(
         BackendServerAddress + newProjectPath,
         request
       );

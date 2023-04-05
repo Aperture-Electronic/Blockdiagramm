@@ -6,6 +6,7 @@
           v-if="item.type == 'menu-button-item'"
           clickable
           class="q-px-sm"
+          @click="onMenuClick(item.action)"
         >
           <q-item-section>
             <div class="row flex">
@@ -38,6 +39,7 @@
 </template>
 
 <script lang="ts">
+import eventBus from 'src/event/EventBus';
 import { defineComponent } from 'vue';
 import RibbonToolTipBox from './RibbonToolTipBox.vue';
 
@@ -47,6 +49,11 @@ export default defineComponent({
   props: ['menu'],
   setup() {
     return {};
+  },
+  methods: {
+    onMenuClick(action: string) {
+      eventBus.emit(action);
+    },
   },
 });
 </script>

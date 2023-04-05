@@ -18,9 +18,10 @@ const DiagramCard = [
           title: 'Create Top Diagram',
           description: 'Create a new diagram and set it as the top entity.',
         },
+        action: 'new-diagram-top',
       },
     ],
-    action: undefined,
+    action: 'new-diagram',
   },
   {
     type: 'list-3rows',

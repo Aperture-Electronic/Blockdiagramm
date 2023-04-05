@@ -5,22 +5,37 @@ using HDLElaborateRoslyn.Elaborated;
 using HDLElaborateRoslyn.Elaborator;
 using HDLParserSharp;
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 
 namespace BlockdiagrammBackend.Models.Project
 {
     public partial class ProjectInstance
     {
-        private ConcurrentBag<Component> Components { get; } = new();
+        public IEnumerable<Component> ComponentsList => Components.Values;
 
-        private void Elaborate(SourceFile file)
+        private ConcurrentDictionary<string, Component> Components { get; } = new();
+
+        private List<string> Elaborate(SourceFile file)
         {
             if (!file.Exist)
             {
                 throw new FileNotFoundException($"The file ({file.ShortName}) to elaborate is not exist", file.FilePath);
             }
 
+            // Get old hash
+            string oldHash = file.ContentHash;
+
             // Read the file content and get ready to elaborate
             file.ReadFileContent().Wait();
+
+            // Get new hash
+            string newHash = file.ContentHash;
+
+            if (oldHash == newHash)
+            {
+                // The hash is match, do not update the file
+                return new List<string>();
+            }
 
             // Use the language parser to get abstract language tree (AST)
             HDLEvaluator evaluator = new();
@@ -32,13 +47,27 @@ namespace BlockdiagrammBackend.Models.Project
             elaborator.ElaborateModules();
             elaborator.GenerateModuleGenericsList();
             elaborator.ElaborateModuleGenerics();
+            elaborator.ElaborateModulePort();
 
             // Make the component and put them into the components list
+
+            // Make a hash list to store which component is latest, 
+            // and others are need to be deleted
+            List<string> updatedOrAdded = new List<string>();
             foreach (ElaboratedModule module in elaborator.Modules)
             {
-                Component component = new(file, module);
-                Components.Add(component);
+                // Get the new hash of new elaborated module
+                string newComponentHash = Component.GetHash(file, module);
+                updatedOrAdded.Add(newComponentHash);
+
+                // If there is a matched hash, replace the component
+                // Else, add the new component to the file
+                Component newComponent = new Component(file, module);
+                Components.AddOrUpdate(newComponent.Hash, (_) => new Component(file, module),
+                    (_, original) => original.UpdateModule(module));    
             }
+
+            return updatedOrAdded;
         }
 
         private static List<HDLObject> ParserHDLFileByType(string content, SourceFileType type, HDLEvaluator evaluator)
@@ -67,7 +96,51 @@ namespace BlockdiagrammBackend.Models.Project
             return ast;
         }
 
-        public void Elaborate(string hash)
+        private List<ElaborateResult> Elaborate(IEnumerable<SourceFile> sourceFiles)
+        {
+            List<ElaborateResult> result = new List<ElaborateResult>();
+            List<string> updatedOrAdded = new List<string>();
+            foreach (SourceFile file in sourceFiles)
+            {
+                List<string> updateOrAddedInFile;
+
+                try
+                {
+                    updateOrAddedInFile = Elaborate(file);
+
+                    // Get components name
+                    var newComponentsName = from newHash in updateOrAddedInFile
+                                            select Components[newHash].Module.Name;
+                    result.Add(new ElaborateResult(true, file.Hash, newComponentsName));
+                }
+                catch (Exception ex)
+                {
+                    result.Add(new ElaborateResult(false, file.Hash, ex.Message));
+                    break;
+                }
+
+                foreach (string newHash in updateOrAddedInFile)
+                {
+                    if (!updatedOrAdded.Contains(newHash))
+                    {
+                        updatedOrAdded.Add(newHash);
+                    }
+                }
+            }
+
+            List<string> componentHash = Components.Keys.ToList();
+            foreach (string hash in componentHash)
+            {
+                if (!updatedOrAdded.Contains(hash))
+                {
+                    Components.Remove(hash, out _);
+                }
+            }
+
+            return result;
+        }
+
+        public List<ElaborateResult> Elaborate(string hash)
         {
             IEnumerable<SourceFile> query = from source in SourceFiles
                                             where source.Hash == hash
@@ -78,17 +151,9 @@ namespace BlockdiagrammBackend.Models.Project
                 throw new Exception("The file to elaborate must be contained in project");
             }
 
-            Elaborate(query.First());
+            return Elaborate(query);
         }
 
-        public void ElaborateAll()
-        {
-            Components.Clear();
-            // Parallel.ForEach(SourceFiles, Elaborate);
-            foreach (SourceFile source in SourceFiles)
-            {
-                Elaborate(source);
-            }
-        }
+        public List<ElaborateResult> ElaborateAll() => Elaborate(SourceFiles);
     }
 }

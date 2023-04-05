@@ -1,5 +1,5 @@
 <template>
-  <q-drawer
+  <!-- <q-drawer
     show-if-above
     v-model="leftMenuPanel"
     :mini="leftMenuMiniState"
@@ -10,6 +10,14 @@
     bordered
     class="bg-grey-3"
     mini-to-overlay
+  > -->
+  <q-drawer
+    show-if-above
+    v-model="leftMenuPanel"
+    :mini="leftMenuMiniState"
+    bordered
+    class="bg-grey-3"
+    mini-to-overlay
   >
     <q-list padding>
       <q-item
@@ -17,6 +25,7 @@
         :key="item.name"
         clickable
         v-ripple
+        @click="onLeftMenuClick(item)"
       >
         <q-item-section avatar>
           <q-icon :name="item.icon" />
@@ -30,7 +39,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
-
+import eventBus from 'src/event/EventBus';
 import leftMenu from '../layouts/LeftMenuLayout';
 
 export default defineComponent({
@@ -44,6 +53,12 @@ export default defineComponent({
       leftMenuPanel,
       leftMenuMiniState,
     };
+  },
+  methods: {
+    onLeftMenuClick(arg: unknown) {
+      let item = arg as { component: string };
+      eventBus.emit('left-menu-switch', item.component);
+    },
   },
 });
 </script>

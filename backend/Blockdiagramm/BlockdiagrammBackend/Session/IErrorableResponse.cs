@@ -2,8 +2,8 @@
 {
     public interface IErrorableResponse
     {
-        public bool Success { get; set; }
+        public bool Success { get; }
 
-        public string ErrorReason { get; set; }
+        public string ErrorReason { get; }
     }
 }

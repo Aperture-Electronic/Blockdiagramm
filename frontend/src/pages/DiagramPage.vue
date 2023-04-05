@@ -1,12 +1,33 @@
 <template>
-  <div style="min-height: inherit" id="diagram-container">
-    <div id="diagram"></div>
+  <div
+    class="flex"
+    style="min-height: inherit; flex-direction: column"
+    id="diagram-container"
+  >
+    <div style="flex: 1" id="diagram"></div>
   </div>
 </template>
 
 <script lang="ts">
-import { Graph, Shape, CellView } from '@antv/x6';
-import { defineComponent } from 'vue';
+import { Graph } from '@antv/x6';
+import eventBus from 'src/event/EventBus';
+import BlockDiagram from 'src/tools/diagram/BlockDiagram';
+import DiagramComponent from 'src/tools/diagram/DiagramComponent';
+import DiagramPin, {
+  PinDirection,
+  PinType,
+} from 'src/tools/diagram/DiagramPin';
+import { fetchJsonPostObject } from 'src/tools/Fetch';
+import {
+  addComponentToGraph,
+  initializeGraph,
+  newGraph,
+} from 'src/tools/graph/GraphManage';
+import { BackendServerAddress } from 'src/tools/server/BackendServer';
+import ComponentMeta from 'src/tools/server/components/ComponentMeta';
+import { ref, defineComponent, Ref } from 'vue';
+
+const getComponentPath = '/Elaborator/GetComponent';
 
 export default defineComponent({
   name: 'DiagramPage',
@@ -15,11 +36,14 @@ export default defineComponent({
     return {};
   },
   data() {
+    let graph: Ref<Graph | null> = ref(null);
+
     return {
-      graph: null as Graph | null,
+      graph,
       diagram: undefined as HTMLElement | undefined,
       container: undefined as HTMLElement | undefined,
       resizeObserver: null as ResizeObserver | null,
+      sessionId: (this as unknown as { $CONTEXT_ID: string }).$CONTEXT_ID,
     };
   },
   mounted() {
@@ -31,128 +55,89 @@ export default defineComponent({
 
     this.container = container;
     this.diagram = diagram;
+    this.graph = initializeGraph(diagram);
 
-    // Get container size and set to graph
-    let style = window.getComputedStyle(container, null);
-    let width = style.width;
-    let height = style.minHeight;
-
-    console.log('width: ' + width, 'height: ' + height);
-
-    // Set the resize observer
-    this.resizeObserver = new ResizeObserver(this.onDiagramContainerResize);
-    this.resizeObserver.observe(container);
-
-    this.graph = new Graph({
-      container: this.diagram,
-      width: 150,
-      height: 150,
-      grid: true,
-      connecting: {
-        snap: true,
-        allowBlank: false,
-        allowMulti: 'withPort',
-        allowLoop: false,
-        allowNode: false,
-        allowEdge: false,
-        allowPort: true,
-        highlight: true,
-      },
-      interacting: function (cellView: CellView) {
-        return {
-          magnetConnectable: true,
-        };
-      },
+    // eventBus.off('create-new-diagram');
+    eventBus.on('create-new-diagram', (blockDiagram: BlockDiagram) => {
+      console.log('Create new diagram: Name = ', blockDiagram.name);
+      if (this.graph != null) {
+        newGraph(this.graph, blockDiagram);
+      }
     });
 
-    // TODO: Test
-    let node = new Shape.Rect({
-      x: 100,
-      y: 100,
-      width: 150,
-      height: 100,
-      angle: 0,
-      attrs: {
-        label: {
-          text: 'Demo',
-          fill: 'white',
-        },
-      },
-      ports: {
-        groups: {
-          in: { position: 'left', label: { position: 'right' } },
-          out: { position: 'right', label: { position: 'left' } },
-        },
-        items: [
-          { id: 'clk', group: 'in', attrs: { text: { text: 'clk' } } },
-          { id: 'dout', group: 'out', attrs: { text: { text: 'dout' } } },
-        ],
-      },
-    });
+    eventBus.on('add-component', async (c: unknown) => {
+      let simplifiedComp = c as unknown as {
+        hash: string;
+        name: string;
+      };
 
-    let node2 = new Shape.Rect({
-      x: 150,
-      y: 150,
-      width: 200,
-      height: 100,
-      angle: 0,
-      attrs: {
-        label: {
-          text: 'Demo',
-          fill: 'white',
-        },
-      },
-      ports: {
-        groups: {
-          in: { position: 'left', label: { position: 'right' } },
-          out: { position: 'right', label: { position: 'left' } },
-        },
-        items: [
-          { id: 'clk', group: 'in', attrs: { text: { text: 'clk' } } },
-          { id: 'dout', group: 'out', attrs: { text: { text: 'dout' } } },
-        ],
-      },
-    });
+      console.log('Add component: ', simplifiedComp.name);
 
-    this.graph.addNode(node);
-    this.graph.addNode(node2);
+      // We need get the detail information of the component
+      // by its hash, and then create a new DiagramComponent
+      // and add it to the graph
 
-    this.graph.addEdge(
-      new Shape.Edge()
-        .setSource(node, { port: 'dout' })
-        .setTarget(node2, { port: 'clk' })
-        .setRouter('manhattan')
-    );
-    this.graph.enableMouseWheel();
+      // Get the component detail information from the server
+      let response = await fetchJsonPostObject(
+        BackendServerAddress + getComponentPath,
+        {
+          sessionId: this.sessionId,
+          hash: simplifiedComp.hash,
+        }
+      );
 
-    return {
-      graph: this.graph,
-    };
-  },
-  beforeUnmount() {
-    if (this.resizeObserver != null && this.container != null) {
-      this.resizeObserver.unobserve(this.container);
-    }
-  },
-  methods: {
-    onDiagramContainerResize() {
-      // TODO: Check if this is the right way to do it
-      if (this.container == null || this.graph == null) {
+      if (!(response as unknown as { success: boolean })) {
         return;
       }
 
-      this.graph.resize(
-        this.container.clientWidth,
-        this.container.clientHeight
+      if (!(response as unknown as { success: boolean }).success) {
+        return;
+      }
+
+      let component = (
+        response as unknown as {
+          component: {
+            hash: string;
+            name: string;
+            interfaces: [];
+          };
+        }
+      ).component;
+
+      let diagramComponent = new DiagramComponent(
+        component.hash,
+        component.name
       );
-    },
+
+      for (var compInterface of component.interfaces) {
+        if (compInterface as unknown as ComponentMeta) {
+          let meta = compInterface as unknown as ComponentMeta;
+
+          let direction =
+            meta.bus.direction == 0
+              ? PinDirection.OutputMaster
+              : PinDirection.InputSlave;
+          let pinName = '';
+          let pinType = PinType.Single;
+          if (meta.portCount == 1) {
+            pinName = meta.modulePort[0].name;
+          }
+
+          diagramComponent.addPin(new DiagramPin(direction, pinType, pinName));
+        }
+      }
+
+      if (this.graph != null) {
+        addComponentToGraph(this.graph, diagramComponent);
+      }
+    });
   },
+  methods: {},
 });
 </script>
 
 <style>
-/* TODO: This is a temporary method to disable scroll bar display */
-body {
+.diagram-container {
   overflow: hidden;
 }
 </style>

@@ -55,7 +55,7 @@
 import eventBus from 'src/event/EventBus';
 import { ref, defineComponent } from 'vue';
 import ElectronApi from 'src-electron/api/electron-api';
-import { fetchJSONPostObject } from 'src/tools/Fetch';
+import { fetchJsonPostObject } from 'src/tools/Fetch';
 import { BackendServerAddress } from 'src/tools/server/BackendServer';
 import DialogErrorBanner from './DialogErrorBanner.vue';
 import { SourceType } from 'src/tools/server/sources/SourceFileType';
@@ -160,7 +160,7 @@ export default defineComponent({
           continue;
         }
 
-        let response = fetchJSONPostObject(
+        let response = fetchJsonPostObject(
           BackendServerAddress + addSourcePath,
           {
             sessionId: this.sessionId,
@@ -192,7 +192,8 @@ export default defineComponent({
       // then the error banner will be able to show again
       this.errorMessage = '';
       if (anySuccess) {
-        // Close the dialog
+        // Close the dialog and update the source list
+        eventBus.emit('refresh-source-list');
         this.dialog = false;
       } else if (responses.length == 0) {
         (this.$refs.errorBanner as typeof DialogErrorBanner).showErrorMessage(

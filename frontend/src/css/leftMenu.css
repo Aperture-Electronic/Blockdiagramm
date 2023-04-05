@@ -1,0 +1,17 @@
+.left-menu-list {
+  overflow-y: hidden;
+  position: absolute;
+  top: 2em;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: inherit;
+}
+
+.left-menu-filter {
+  height: 2.5em;
+}
+
+.left-menu-list.with-filter {
+  top: 4.5em;
+}

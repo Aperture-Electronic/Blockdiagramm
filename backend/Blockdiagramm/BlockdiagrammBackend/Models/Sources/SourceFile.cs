@@ -89,6 +89,17 @@ namespace BlockdiagrammBackend.Models.Sources
             streamReader.Close();
         }
 
+        [JsonIgnore, IgnoreDataMember]
+        public string ContentHash
+        {
+            get
+            {
+                // Get hash of content by SHA-256
+                byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(Content));
+                return Convert.ToBase64String(hash);
+            }
+        }
+
         public override string ToString() => $"{FilePath}({Hash}) :: {Type}";
     }
 }

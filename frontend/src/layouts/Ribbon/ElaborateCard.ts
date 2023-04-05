@@ -36,7 +36,7 @@ const ElaborateCard = [
           title: 'Elaborate All',
           description: 'Elaborate all HDL entities in the project.',
         },
-        action: undefined,
+        action: 'elaborate-all',
       },
       {
         type: 'small-button',

@@ -29,7 +29,7 @@ export async function fetchJSON(fetch: Promise<Response>) {
   return json;
 }
 
-export async function fetchJSONPostObject(address: string, request: object) {
+export async function fetchJsonPostObject(address: string, request: object) {
   const response = await fetchJSON(
     fetch(address, {
       method: 'POST',

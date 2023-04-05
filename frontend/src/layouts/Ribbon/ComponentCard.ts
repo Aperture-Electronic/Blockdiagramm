@@ -8,6 +8,7 @@ const ComponentCard = [
       title: 'Add Component',
       description: 'Add a new component to the diagram.',
     },
+    action: 'm-add-component',
   },
   {
     type: 'list-3rows',

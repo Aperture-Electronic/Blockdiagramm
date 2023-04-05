@@ -45,7 +45,9 @@
             :after-class="['diagram-content']"
           >
             <template v-slot:before>
-              <LeftMenuSources />
+              <keep-alive>
+                <component v-bind:is="leftMenu" />
+              </keep-alive>
             </template>
             <template v-slot:after>
               <router-view />
@@ -68,8 +70,7 @@ import { ref } from 'vue';
 import { defineComponent } from 'vue';
 
 import ribbon from '../layouts/RibbonLayout';
-import leftMenu from '../layouts/LeftMenuLayout';
-
+import eventBus from 'src/event/EventBus';
 import ElectronApi from 'src-electron/api/electron-api';
 
 import RibbonPanel from 'src/components/RibbonPanel.vue';
@@ -78,6 +79,8 @@ import TinyServerMonitor from 'src/components/StatusBar/TinyServerMonitor.vue';
 import DialogesContainer from 'src/components/DialogesContainer.vue';
 import ProjectNameLabel from 'src/components/ProjectNameLabel.vue';
 import LeftMenuSources from 'src/components/LeftMenu/LeftMenuSources.vue';
+import LeftMenuComponents from 'src/components/LeftMenu/LeftMenuComponents.vue';
+import leftMenu from '../layouts/LeftMenuLayout';
 
 export default defineComponent({
   name: 'MainLayout',
@@ -88,6 +91,12 @@ export default defineComponent({
     DialogesContainer,
     ProjectNameLabel,
     LeftMenuSources,
+    LeftMenuComponents,
+  },
+  data() {
+    return {
+      leftMenu: leftMenu.items[0].component,
+    };
   },
   setup() {
     let defRibbonPanel = ribbon.panels.find((p) => p.default);
@@ -97,11 +106,15 @@ export default defineComponent({
     return {
       tab: ref(defRibbonPanel.name),
       ribbon: ribbon,
-      leftMenu: leftMenu,
       leftMenuMiniState: ref(true),
       leftMenuPanel: ref(false),
       resourceBoxWidth: ref(250),
     };
+  },
+  mounted() {
+    eventBus.on('left-menu-switch', (component: string) => {
+      this.leftMenu = component;
+    });
   },
   methods: {
     closeWindow() {

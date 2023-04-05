@@ -15,7 +15,7 @@
       ></q-btn>
     </q-bar>
     <div class="q-pl-sm">
-      <q-scroll-area class="source-list">
+      <q-scroll-area class="left-menu-list">
         <div>
           <q-list separator>
             <SourceItem
@@ -39,12 +39,11 @@
 </template>
 
 <script lang="ts">
-import { Dictionary } from '@antv/x6';
 import eventBus from 'src/event/EventBus';
 import { fetchJsonGetObject } from 'src/tools/Fetch';
 import { BackendServerAddress } from 'src/tools/server/BackendServer';
 import SourceFile from 'src/tools/server/sources/SourceFile';
-import { ref, defineComponent } from 'vue';
+import { defineComponent } from 'vue';
 import SourceItem from './SourceItem.vue';
 
 const getSourcesListPath = '/Source/GetSourcesList';
@@ -136,17 +135,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
-:deep(.q-scrollarea__content) {
-  width: inherit;
-}
+@import 'src/css/leftMenu.css';
 
-.source-list {
-  overflow-y: hidden;
-  position: absolute;
-  top: 2em;
-  left: 0;
-  right: 0;
-  bottom: 0;
+:deep(.q-scrollarea__content) {
   width: inherit;
 }
 </style>
